@@ -676,6 +676,7 @@ pub fn init(
             .size = size,
             .full_config = config,
             .config = try termio.Termio.DerivedConfig.init(alloc, config),
+            .system_color_scheme = &app.system_color_scheme,
             .backend = .{ .exec = io_exec },
             .mailbox = io_mailbox,
             .renderer_state = &self.renderer_state,
@@ -4750,8 +4751,11 @@ pub fn colorSchemeCallback(self: *Surface, scheme: apprt.ColorScheme) !void {
     // Setup our conditional state which has the current color theme.
     self.config_conditional_state.theme = new_scheme;
     self.notifyConfigConditionalState();
+}
 
-    // If mode 2031 is on, then we report the change live.
+/// Notify the terminal that the system color scheme changed.
+pub fn systemColorSchemeChanged(self: *Surface) void {
+    // Termio suppresses this report unless mode 2031 is enabled.
     self.queueIo(.{ .color_scheme_report = .{ .force = false } }, .unlocked);
 }
 
